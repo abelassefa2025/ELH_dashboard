@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELH CEO Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+    <style>
+        /* Compiled Tailwind CSS with custom styles */
+        .container{max-width:1920px;margin-left:auto;margin-right:auto;padding:1rem}.mx-auto{margin-left:auto;margin-right:auto}.p-4{padding:1rem}.mb-8{margin-bottom:2rem}.mt-4{margin-top:1rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.font-bold{font-weight:700}.text-center{text-align:center}.text-white{color:#fff}.text-xl{font-size:1.25rem;line-height:1.75rem}.grid{display:grid}.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.gap-6{gap:1.5rem}.w-full{width:100%}.bg-gray-200{background-color:#e5e7eb}.border{border-width:1px}.border-gray-300{border-color:#d1d5db}.p-2{padding:0.5rem}.rounded-lg{border-radius:0.5rem}.shadow-lg{box-shadow:0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -2px rgba(0,0,0,0.05)}.bg-gradient-to-r{background-image:linear-gradient(to right,var(--tw-gradient-stops))}.from-green-700{--tw-gradient-from:#15803d;--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to,rgba(21,128,61,0))}.to-green-500{--tw-gradient-to:#22c55e}.hover\:scale-105:hover{transform:scale(1.05)}.transition{transition-property:all;transition-timing-function:cubic-bezier(0.4,0,0.2,1);transition-duration:150ms}body{background-color:#8B4513}.card{background-color:rgba(255,255,255,0.95);border-radius:0.5rem;padding:1.5rem;margin-bottom:1.5rem;backdrop-filter:blur(5px)}.title{color:#228B22}.highlight{color:#DAA520}table{width:100%;border-collapse:collapse}th,td{border:1px solid #228B22;padding:8px;text-align:left}th{background-color:#228B22;color:#fff}.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.5);justify-content:center;align-items:center}.modal-content{background-color:#fff;padding:2rem;border-radius:0.5rem;max-width:500px}.close{position:absolute;top:1rem;right:1rem;cursor:pointer}
+    </style>
+</head>
+<body>
+    <div class="container mx-auto p-4">
+        <h1 class="text-4xl font-bold text-center text-white mb-8">ELH CEO Dashboard</h1>
+        <div class="grid grid-cols-3 gap-6">
+            <!-- Overview Panel -->
+            <div class="card shadow-lg transition hover:scale-105">
+                <h2 class="title text-xl font-bold">Company Overview</h2>
+                <canvas id="overviewChart" height="150" class="mt-4"></canvas>
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                    <div><span class="highlight">Revenue:</span> <span id="revenue">1,250,000</span> ETB</div>
+                    <div><span class="highlight">Listings:</span> <span id="listings">350</span></div>
+                    <div><span class="highlight">Hubs:</span> <span id="hubs">5</span></div>
+                    <div><span class="highlight">Users:</span> <span id="users">1200</span></div>
+                </div>
+            </div>
+
+            <!-- New Hires Panel -->
+            <div class="card shadow-lg transition hover:scale-105">
+                <h2 class="title text-xl font-bold">New Hires</h2>
+                <select id="hiresFilter" class="w-full border border-gray-300 p-2 mt-4 rounded-lg" onchange="filterHires()">
+                    <option value="">All Hubs</option>
+                    <option value="ELH_Adama_01">ELH_Adama_01</option>
+                    <option value="ELH_Jinka_01">ELH_Jinka_01</option>
+                </select>
+                <canvas id="hiresChart" height="150" class="mt-4"></canvas>
+                <table id="hiresTable" class="mt-4">
+                    <thead>
+                        <tr><th>Name</th><th>Role</th><th>Hub</th><th>Start Date</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr data-hub="ELH_Adama_01" onclick="showHireDetails('Abebe Kebede', 'Sales', 'ELH_Adama_01', 'abebe@elh.com')">
+                            <td>Abebe Kebede</td><td>Sales</td><td>ELH_Adama_01</td><td>2025-05-01</td>
+                        </tr>
+                        <tr data-hub="ELH_Jinka_01" onclick="showHireDetails('Fatima Ali', 'Vet', 'ELH_Jinka_01', 'fatima@elh.com')">
+                            <td>Fatima Ali</td><td>Vet</td><td>ELH_Jinka_01</td><td>2025-04-28</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Security Incidents Panel -->
+            <div class="card shadow-lg transition hover:scale-105">
+                <h2 class="title text-xl font-bold">Security Incidents</h2>
+                <select id="securityFilter" class="w-full border border-gray-300 p-2 mt-4 rounded-lg" onchange="filterSecurity()">
+                    <option value="">All Statuses</option>
+                    <option value="Resolved">Resolved</option>
+                    <option value="Pending">Pending</option>
+                </select>
+                <canvas id="securityChart" height="150" class="mt-4"></canvas>
+                <table id="securityTable" class="mt-4">
+                    <thead>
+                        <tr><th>Hub</th><th>Type</th><th>Date</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr data-status="Resolved" onclick="showSecurityDetails('ELH_Adama_01', 'QR Fraud', 'Resolved QR mismatch')">
+                            <td>ELH_Adama_01</td><td>QR Fraud</td><td>2025-05-02</td><td>Resolved</td>
+                        </tr>
+                        <tr data-status="Pending" onclick="showSecurityDetails('ELH_Gondar_06', 'Theft', 'Under investigation')">
+                            <td>ELH_Gondar_06</td><td>Theft</td><td>2025-05-04</td><td>Pending</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Sales Panel -->
+            <div class="card shadow-lg transition hover:scale-105">
+                <h2 class="title text-xl font-bold">New Sales</h2>
+                <select id="salesFilter" class="w-full border border-gray-300 p-2 mt-4 rounded-lg" onchange="filterSales()">
+                    <option value="">All Hubs</option>
+                    <option value="ELH_Adama_01">ELH_Adama_01</option>
+                    <option value="ELH_Jinka_01">ELH_Jinka_01</option>
+                </select>
+                <canvas id="salesChart" height="150" class="mt-4"></canvas>
+                <table id="salesTable" class="mt-4">
+                    <thead>
+                        <tr><th>Livestock ID</th><th>Price (ETB)</th><th>Buyer</th><th>Date</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr data-hub="ELH_Adama_01" onclick="showSaleDetails('L001', 'Cattle', 'Excellent', '123e4567')">
+                            <td>L001</td><td>15,000</td><td>Mulugeta Import</td><td>2025-05-03</td>
+                        </tr>
+                        <tr data-hub="ELH_Jinka_01" onclick="showSaleDetails('L002', 'Goat', 'Normal', '789a123b')">
+                            <td>L002</td><td>12,000</td><td>Addis Butchery</td><td>2025-05-05</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Bids Panel -->
+            <div class="card shadow-lg transition hover:scale-105">
+                <h2 class="title text-xl font-bold">Bids</h2>
+                <select id="bidsFilter" class="w-full border border-gray-300 p-2 mt-4 rounded-lg" onchange="filterBids()">
+                    <option value="">All Statuses</option>
+                    <option value="Open">Open</option>
+                    <option value="Closed">Closed</option>
+                </select>
+                <canvas id="bidsChart" height="150" class="mt-4"></canvas>
+                <table id="bidsTable" class="mt-4">
+                    <thead>
+                        <tr><th>Livestock ID</th><th>Highest Bid (ETB)</th><th>Bidder</th><th>Status</th><th>Time Left</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr data-status="Open">
+                            <td onclick="showBidDetails('L003', 'Hailu Co.', '2 bids')">L003</td>
+                            <td>14,000</td><td>Hailu Co.</td><td>Open</td>
+                            <td id="bidTimer1"></td>
+                        </tr>
+                        <tr data-status="Closed">
+                            <td onclick="showBidDetails('L004', 'NGO Feed', '3 bids')">L004</td>
+                            <td>16,000</td><td>NGO Feed</td><td>Closed</td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal for Drill-Down Details -->
+        <div id="modal" class="modal">
+            <div class="modal-content relative">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2 id="modalTitle" class="title text-xl font-bold"></h2>
+                <p id="modalContent"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data
+        const data = {
+            overview: { revenue: 1250000, listings: 350, hubs: 5, users: 1200, revenueByMonth: [500000, 600000, 650000], expensesByMonth: [300000, 350000, 400000] },
+            hires: [
+                { id: 1, name: 'Abebe Kebede', role: 'Sales', hub: 'ELH_Adama_01', startDate: '2025-05-01', email: 'abebe@elh.com' },
+                { id: 2, name: 'Fatima Ali', role: 'Vet', hub: 'ELH_Jinka_01', startDate: '2025-04-28', email: 'fatima@elh.com' }
+            ],
+            security: [
+                { id: 1, hub: 'ELH_Adama_01', type: 'QR Fraud', date: '2025-05-02', status: 'Resolved', notes: 'Resolved QR mismatch' },
+                { id: 2, hub: 'ELH_Gondar_06', type: 'Theft', date: '2025-05-04', status: 'Pending', notes: 'Under investigation' }
+            ],
+            sales: [
+                { id: 1, livestockId: 'L001', price: 15000, buyer: 'Mulugeta Import', date: '2025-05-03', hub: 'ELH_Adama_01', type: 'Cattle', health: 'Excellent', qr: '123e4567' },
+                { id: 2, livestockId: 'L002', price: 12000, buyer: 'Addis Butchery', date: '2025-05-05', hub: 'ELH_Jinka_01', type: 'Goat', health: 'Normal', qr: '789a123b' }
+            ],
+            bids: [
+                { id: 1, livestockId: 'L003', highestBid: 14000, bidder: 'Hailu Co.', status: 'Open', endTime: new Date('2025-05-09T12:00:00Z'), bidCount: 2 },
+                { id: 2, livestockId: 'L004', highestBid: 16000, bidder: 'NGO Feed', status: 'Closed', endTime: new Date('2025-05-07T12:00:00Z'), bidCount: 3 }
+            ]
+        };
+
+        // Initialize Charts
+        new Chart(document.getElementById('overviewChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Mar', 'Apr', 'May'],
+                datasets: [
+                    { label: 'Revenue (ETB)', data: data.overview.revenueByMonth, backgroundColor: '#228B22' },
+                    { label: 'Expenses (ETB)', data: data.overview.expensesByMonth, backgroundColor: '#DAA520' }
+                ]
+            },
+            options: { scales: { y: { beginAtZero: true } } }
+        });
+
+        new Chart(document.getElementById('hiresChart'), {
+            type: 'pie',
+            data: {
+                labels: ['Sales', 'Vet'],
+                datasets: [{ data: [1, 1], backgroundColor: ['#228B22', '#DAA520'] }]
+            }
+        });
+
+        new Chart(document.getElementById('securityChart'), {
+            type: 'bar',
+            data: {
+                labels: ['ELH_Adama_01', 'ELH_Gondar_06'],
+                datasets: [{ label: 'Incidents', data: [1, 1], backgroundColor: '#228B22' }]
+            },
+            options: { scales: { y: { beginAtZero: true } } }
+        });
+
+        new Chart(document.getElementById('salesChart'), {
+            type: 'line',
+            data: {
+                labels: ['May 3', 'May 5'],
+                datasets: [{ label: 'Sales (ETB)', data: [15000, 12000], borderColor: '#DAA520', fill: false }]
+            },
+            options: { scales: { y: { beginAtZero: true } } }
+        });
+
+        new Chart(document.getElementById('bidsChart'), {
+            type: 'pie',
+            data: {
+                labels: ['Open', 'Closed'],
+                datasets: [{ data: [1, 1], backgroundColor: ['#228B22', '#DAA520'] }]
+            }
+        });
+
+        // Filter Functions
+        function filterHires() {
+            const filter = document.getElementById('hiresFilter').value;
+            document.querySelectorAll('#hiresTable tbody tr').forEach(row => {
+                row.style.display = filter === '' || row.dataset.hub === filter ? '' : 'none';
+            });
+        }
+
+        function filterSecurity() {
+            const filter = document.getElementById('securityFilter').value;
+            document.querySelectorAll('#securityTable tbody tr').forEach(row => {
+                row.style.display = filter === '' || row.dataset.status === filter ? '' : 'none';
+            });
+        }
+
+        function filterSales() {
+            const filter = document.getElementById('salesFilter').value;
+            document.querySelectorAll('#salesTable tbody tr').forEach(row => {
+                row.style.display = filter === '' || row.dataset.hub === filter ? '' : 'none';
+            });
+        }
+
+        function filterBids() {
+            const filter = document.getElementById('bidsFilter').value;
+            document.querySelectorAll('#bidsTable tbody tr').forEach(row => {
+                row.style.display = filter === '' || row.dataset.status === filter ? '' : 'none';
+            });
+        }
+
+        // Modal Functions
+        function showHireDetails(name, role, hub, email) {
+            document.getElementById('modalTitle').textContent = `Hire: ${name}`;
+            document.getElementById('modalContent').innerHTML = `
+                <p><strong>Role:</strong> ${role}</p>
+                <p><strong>Hub:</strong> ${hub}</p>
+                <p><strong>Email:</strong> ${email}</p>
+            `;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function showSecurityDetails(hub, type, notes) {
+            document.getElementById('modalTitle').textContent = `Incident: ${type}`;
+            document.getElementById('modalContent').innerHTML = `
+                <p><strong>Hub:</strong> ${hub}</p>
+                <p><strong>Type:</strong> ${type}</p>
+                <p><strong>Notes:</strong> ${notes}</p>
+            `;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function showSaleDetails(id, type, health, qr) {
+            document.getElementById('modalTitle').textContent = `Sale: ${id}`;
+            document.getElementById('modalContent').innerHTML = `
+                <p><strong>Livestock ID:</strong> ${id}</p>
+                <p><strong>Type:</strong> ${type}</p>
+                <p><strong>Health:</strong> ${health}</p>
+                <p><strong>QR Code:</strong> ${qr}</p>
+            `;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function showBidDetails(id, bidder, bidCount) {
+            document.getElementById('modalTitle').textContent = `Bid: ${id}`;
+            document.getElementById('modalContent').innerHTML = `
+                <p><strong>Livestock ID:</strong> ${id}</p>
+                <p><strong>Bidder:</strong> ${bidder}</p>
+                <p><strong>Bid Count:</strong> ${bidCount}</p>
+            `;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        // Countdown Timers
+        function updateTimers() {
+            const now = new Date();
+            const bid1End = new Date('2025-05-09T12:00:00Z');
+            const timeLeft1 = bid1End - now;
+            if (timeLeft1 > 0) {
+                const hours = Math.floor(timeLeft1 / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft1 % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft1 % (1000 * 60)) / 1000);
+                document.getElementById('bidTimer1').textContent = `${hours}h ${minutes}m ${seconds}s`;
+            } else {
+                document.getElementById('bidTimer1').textContent = 'Ended';
+            }
+        }
+
+        setInterval(updateTimers, 1000);
+        updateTimers();
+    </script>
+</body>
+</html>
